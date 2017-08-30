@@ -37,6 +37,13 @@ public final class PushServer {
         if (channelInitializer == null) {
             throw new NullPointerException("channelInitializer must not null");
         }
+
+        if (host == null || host.isEmpty()) {
+            host = HOST;
+        }
+        if (PORT <= 1024) {
+            port = PORT;
+        }
         this.host = host;
         this.port = port;
         this.bossNum = BOSS_NUM;
@@ -64,7 +71,8 @@ public final class PushServer {
             f.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            LOG.error("bind {}:{} fail!", e);
+            LOG.error("bind {}:{} fail!", host, port);
+            LOG.error("", e);
         } finally {
             workGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();

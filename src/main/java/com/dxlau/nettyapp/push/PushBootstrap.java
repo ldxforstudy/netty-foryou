@@ -1,5 +1,6 @@
 package com.dxlau.nettyapp.push;
 
+import com.dxlau.nettyapp.push.service.IPushService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -17,6 +18,12 @@ public final class PushBootstrap {
         LOG.info("##############################");
         ApplicationContext ctx = new AnnotationConfigApplicationContext(PushAppConfig.class);
         PushServer pushServer = (PushServer) ctx.getBean("pushServer");
+
+        // 1. Mock
+        IPushService pushService = (IPushService) ctx.getBean("pushService");
+        pushService.mock();
+
+        // 2. 启动Push服务
         pushServer.doIt();
     }
 }

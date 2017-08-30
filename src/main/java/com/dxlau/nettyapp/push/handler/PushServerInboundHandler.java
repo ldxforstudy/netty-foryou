@@ -2,6 +2,7 @@ package com.dxlau.nettyapp.push.handler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
+import io.netty.channel.group.ChannelGroup;
 import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
@@ -16,6 +17,14 @@ public class PushServerInboundHandler extends ChannelDuplexHandler {
     private static final String SUCCESS_RESP = "{\"code\":0, \"msg\":\"ok\"}";
     private static final String WELCOME = "{\"code\":0, \"msg\":\"welcome\"}";
 
+    // 存储所有已连接的客户端
+    // 它本身是线程安全的
+    private ChannelGroup allClients;
+
+    PushServerInboundHandler(ChannelGroup allClients) {
+        this.allClients = allClients;
+    }
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof ByteBuf) {
@@ -23,20 +32,14 @@ public class PushServerInboundHandler extends ChannelDuplexHandler {
             CharSequence payload = msgBytebuf.getCharSequence(0, msgBytebuf.readableBytes(), CharsetUtil.UTF_8);
             LOG.info("receive {}.", payload);
         }
-        ByteBuf resp = ctx.alloc().buffer();
-        resp.writeCharSequence(SUCCESS_RESP, CharsetUtil.UTF_8);
-        ctx.write(resp);
-        ReferenceCountUtil.refCnt(resp);
-    }
-
-    @Override
-    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        System.out.println("~");
-        super.write(ctx, msg, promise);
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        // 1.加入在线客户端列表
+        // 2.发送欢迎语
+        allClients.add(ctx.channel());
+
         ByteBuf resp = ctx.alloc().buffer();
         resp.writeCharSequence(WELCOME, CharsetUtil.UTF_8);
         ctx.writeAndFlush(resp);
@@ -50,7 +53,7 @@ public class PushServerInboundHandler extends ChannelDuplexHandler {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        cause.printStackTrace();
+        LOG.error("", cause);
         ctx.close();
     }
 }

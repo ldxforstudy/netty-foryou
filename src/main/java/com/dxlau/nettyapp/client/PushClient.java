@@ -90,22 +90,11 @@ public class PushClient {
 
         @Override
         public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+            System.out.println("channelRead");
             if (msg instanceof ByteBuf) {
                 ByteBuf byteBufMsg = (ByteBuf) msg;
                 CharSequence strMsg = byteBufMsg.getCharSequence(0, byteBufMsg.readableBytes(), Charset.forName("UTF-8"));
                 System.out.println("Receive: " + strMsg);
-            }
-        }
-
-        @Override
-        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-            // TODO sth cool
-            if (msg instanceof CharSequence) {
-                ByteBuf buf = ctx.alloc().buffer();
-                buf.writeCharSequence((CharSequence) msg, CharsetUtil.UTF_8);
-
-                ctx.write(buf, promise);
-                ReferenceCountUtil.refCnt(msg);
             }
         }
 

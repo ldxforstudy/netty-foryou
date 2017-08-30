@@ -9,6 +9,7 @@
     </appender>
 
     <logger name="io.netty" level="info"/>
+    <logger name="org.springframework" level="info"/>
     <root level="debug">
         <appender-ref ref="STDOUT"/>
     </root>
